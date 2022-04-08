@@ -62,7 +62,7 @@ const server = http.createServer((req, res) => {
 
                 //IF USER IS NOT FOUND
                 if(!found){
-                    res.writeHead(400, {'Content-Type': 'text/html'});
+                    res.writeHead(401, {'Content-Type': 'text/html'});
                     res.write(JSON.stringify("Error Logging In."));
                     res.end();
             }   
@@ -82,29 +82,46 @@ const server = http.createServer((req, res) => {
           
         //READING FILE
         fs.readFile("./users.json", "utf8", (err, data) => {
+            let found = false;
             if (err) {
                 console.log(err);
             } else {
                 //PARSING FILE DATA TO JSON OBJ
                 let obj = JSON.parse(data);
 
-                //PUSING PARSED REQUEST DATA INTO THE JSON OBJ VAR.
-                obj.users.push(JSON.parse(data1)); 
+                //CHECK IF USER ALREADY EXISTS
+                for(let i = 0 ;i < obj.users.length;i++){
+                    if(obj.users[i].email === JSON.parse(data1).email){
+                            console.log("User Already Exits");
+                            res.writeHead(400,{"Content-Type":"application/json"})
+                            res.end("User Already Exists ");
+                            found=true;
+                    }         
+                }
+                
+                if(!found){
+                    //PUSING PARSED REQUEST DATA INTO THE JSON OBJ VAR.
+                    obj.users.push(JSON.parse(data1));
 
-                //CONVERTING JS OBJ INTO STRING
-                let json = JSON.stringify(obj, null, 2);
+                    //CONVERTING JS OBJ INTO STRING
+                    let json = JSON.stringify(obj, null, 2);
 
-                //WRITING TO FILE
-                fs.writeFile("./users.json", json, "utf8", (err) => {
+                    //WRITING TO FILE
+                    fs.writeFile("./users.json", json, "utf8", (err) => {
                         if (err) {
                             console.log(err);
+                            res.writeHead(500,{"Content-Type":"application/json"})
                             res.end("Error while storing data!");
                         } else {
-                            console.log("Done");
+                            console.log("Registration Done");
                             res.writeHead(200,{"Content-Type":"application/json"})
                             res.end(JSON.stringify(obj));
                         }
-                });
+                    });
+                }
+                 
+
+                
              }
         });
         
@@ -122,6 +139,10 @@ const server = http.createServer((req, res) => {
 
         //READING FILE
         fs.readFile("./users.json", "utf8", (err, data) => {
+
+            //FLAG
+            let found =false;
+
             if (err) {
                 console.log(err);
             } else {
@@ -137,15 +158,20 @@ const server = http.createServer((req, res) => {
     
                     if(obj.users[i].id === del.id){
                         obj.users.splice(i,1); 
+                        found = true;
                     }
 
                 }
 
-                //CONVERTING OBJ DATA INTO STRING
-                let json = JSON.stringify(obj, null, 2);
+                if(!found){
+                    res.writeHead(404,{"Content-Type":"application/json"})
+                    res.end("No User Found To Delete");
+                }else{
+                    //CONVERTING OBJ DATA INTO STRING
+                    let json = JSON.stringify(obj, null, 2);
 
-                //WRITING TO THE FILE
-                fs.writeFile("./users.json", json, "utf8", (err) => {
+                    //WRITING TO THE FILE
+                    fs.writeFile("./users.json", json, "utf8", (err) => {
                         if (err) {
                             console.log(err);
                             res.end("Error while Deleting data!");
@@ -154,11 +180,79 @@ const server = http.createServer((req, res) => {
                             res.writeHead(200,{"Content-Type":"application/json"})
                             res.end(JSON.stringify(obj));
                         }
-                });
+                    });
+                }
+
+                
              }
         });
  
     }
+
+
+
+    // UPDATE ROUTE
+    else if(url==="/userupdate" && method === "PUT"){
+
+        //STORING REQUEST DATA IN DATA1 WHICH IS RECEIVED IN CHUNKS
+        let data1 = "";
+        req.on("data",function(chunk){
+            data1+=chunk;
+        })
+
+        //READING FILE
+        fs.readFile("./users.json", "utf8", (err, data) => {
+
+            //FLAG
+            let found=false;
+
+            if (err) {
+                console.log(err);
+            } else {
+
+                //PARSING FILE DATA INTO OBJ.
+                let obj = JSON.parse(data);
+
+                //PARSING REQ DATA INTO OBJ.
+                const update = JSON.parse(data1);
+
+                //UPDATING PARTICULAR USER MATCHING ID
+                for(let i=0;i<obj.users.length;i++){
+    
+                    if(obj.users[i].id === update.id){
+                        obj.users[i] = update;
+                        found=true;
+                    }
+
+                }
+                //IF USER IS NOT FOUND
+                if(!found){
+                    res.writeHead(404,{"Content-Type":"application/json"})
+                    res.end("No User Found");
+                }else{
+                    //CONVERTING OBJ DATA INTO STRING
+                    let json = JSON.stringify(obj, null, 2);
+
+                    //WRITING TO THE FILE
+                    fs.writeFile("./users.json", json, "utf8", (err) => {
+                        if (err) {
+                            console.log(err);
+                            res.end("Error while Updating data!");
+                        } else {
+                            console.log("Done Updating");
+                            res.writeHead(200,{"Content-Type":"application/json"})
+                            res.end(JSON.stringify(obj));
+                        }
+                    });
+                }
+             
+             }
+        });
+ 
+    }
+
+
+
 
     //404 FOR WRONG ROUTE OR METHOD TYPE
     else{
