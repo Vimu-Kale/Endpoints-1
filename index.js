@@ -24,9 +24,9 @@ const server = http.createServer((req, res) => {
     else if(url === "/login" && method === "POST"){
         
         //STORING REQUEST DATA IN DATA1 WHICH IS RECEIVED IN CHUNKS
-        let data1 = "";
+        let requestData = "";
         req.on("data", function( chunk ){
-            data1 += chunk;
+            requestData += chunk;
         })
         
 
@@ -42,7 +42,7 @@ const server = http.createServer((req, res) => {
                 var obj = JSON.parse(data);   
 
                 //PARSING REQUEST DATA TO JSON OBJ
-                const jsondata = JSON.parse(data1);
+                const jsondata = JSON.parse(requestData);
                 //FLAG
                 let found = false;  
 
@@ -75,9 +75,9 @@ const server = http.createServer((req, res) => {
     else if(url === "/register" && method === "POST"){
 
         //STORING REQUEST DATA IN DATA1 WHICH IS RECEIVED IN CHUNKS
-        let data1 = "";
+        let requestData = "";
         req.on("data",function(chunk){
-            data1+=chunk;
+            requestData += chunk;
         })
           
         //READING FILE
@@ -91,7 +91,7 @@ const server = http.createServer((req, res) => {
 
                 //CHECK IF USER ALREADY EXISTS
                 for(let i = 0 ;i < obj.users.length;i++){
-                    if(obj.users[i].email === JSON.parse(data1).email){
+                    if(obj.users[i].email === JSON.parse(requestData).email){
                             console.log("User Already Exits");
                             res.writeHead(400,{"Content-Type":"application/json"})
                             res.end("User Already Exists ");
@@ -101,7 +101,7 @@ const server = http.createServer((req, res) => {
                 
                 if(!found){
                     //PUSING PARSED REQUEST DATA INTO THE JSON OBJ VAR.
-                    obj.users.push(JSON.parse(data1));
+                    obj.users.push(JSON.parse(requestData));
 
                     //CONVERTING JS OBJ INTO STRING
                     let json = JSON.stringify(obj, null, 2);
@@ -132,9 +132,9 @@ const server = http.createServer((req, res) => {
     else if(url==="/userdelete" && method === "DELETE"){
 
         //STORING REQUEST DATA IN DATA1 WHICH IS RECEIVED IN CHUNKS
-        let data1 = "";
+        let requestData = "";
         req.on("data",function(chunk){
-            data1+=chunk;
+            requestData += chunk;
         })
 
         //READING FILE
@@ -151,7 +151,7 @@ const server = http.createServer((req, res) => {
                 let obj = JSON.parse(data);
 
                 //PARSING REQ DATA INTO OBJ.
-                const del = JSON.parse(data1);
+                const del = JSON.parse(requestData);
 
                 //DELETING PARTICULAR USER MATCHING ID
                 for(let i=0;i<obj.users.length;i++){
@@ -195,9 +195,9 @@ const server = http.createServer((req, res) => {
     else if(url==="/userupdate" && method === "PUT"){
 
         //STORING REQUEST DATA IN DATA1 WHICH IS RECEIVED IN CHUNKS
-        let data1 = "";
+        let requestData = "";
         req.on("data",function(chunk){
-            data1+=chunk;
+            requestData += chunk;
         })
 
         //READING FILE
@@ -214,7 +214,7 @@ const server = http.createServer((req, res) => {
                 let obj = JSON.parse(data);
 
                 //PARSING REQ DATA INTO OBJ.
-                const update = JSON.parse(data1);
+                const update = JSON.parse(requestData);
 
                 //UPDATING PARTICULAR USER MATCHING ID
                 for(let i=0;i<obj.users.length;i++){
@@ -245,12 +245,12 @@ const server = http.createServer((req, res) => {
                         }
                     });
                 }
-             
+
+                
              }
         });
  
     }
-
 
 
 
